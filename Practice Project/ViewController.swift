@@ -8,189 +8,151 @@
 import UIKit
 
 class ViewController: UIViewController, UITextFieldDelegate {
-    @IBOutlet weak var CardView: UIView!
     
+    @IBOutlet weak var CardView: TopRoundedCardView!
     @IBOutlet weak var ProfileImageView: UIImageView!
-    @IBOutlet weak var FirstNameTextfield: UITextField!
-    
-    @IBOutlet weak var LastNameTextfield: UITextField!
-    
-    @IBOutlet weak var UserNameTextfield: UITextField!
-    
-    @IBOutlet weak var EmailTextfield: UITextField!
-    
-    @IBOutlet weak var PhoneTextfield: UITextField!
-    
+    @IBOutlet weak var FirstNameTextfield: StyledTextField!
+    @IBOutlet weak var LastNameTextfield: StyledTextField!
+    @IBOutlet weak var UserNameTextfield: StyledTextField!
+    @IBOutlet weak var EmailTextfield: StyledTextField!
+    @IBOutlet weak var PhoneTextfield: StyledTextField!
     @IBOutlet weak var ProfileScrollView: UIScrollView!
+    @IBOutlet weak var ProfileSaveButton: PrimaryButton!
     
-    @IBOutlet weak var ProfileSaveButton: UIButton!
+    private let viewModel = ProfileViewModel()
+    private var keyboardManager: KeyboardManager?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        setupTextFields()
-        setupTapGesture()
-        registerForKeyboardNotifications()
+        print("viewDidLoad finished at", Date())
         
+        NotificationCenter.default.addObserver(
+             self,
+             selector: #selector(keyboardDidShow),
+             name: UIResponder.keyboardDidShowNotification,
+             object: nil
+         )
+        
+        configureTextFields()
+        keyboardManager = KeyboardManager(scrollView: ProfileScrollView)
+        setupDismissKeyboardGesture()
+        ProfileScrollView.keyboardDismissMode = .onDrag
         ProfileSaveButton.isEnabled = false
-        updateSaveButtonUI()
-    }
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        CardView.layer.cornerRadius = 20
-        CardView.layer.maskedCorners = [
-            .layerMinXMinYCorner,  // top-left
-            .layerMaxXMinYCorner   // top-right
-        ]
-        CardView.clipsToBounds = true
-        
-        styleTextField(FirstNameTextfield)
-        styleTextField(LastNameTextfield)
-        styleTextField(UserNameTextfield)
-        styleTextField(EmailTextfield)
-        styleTextField(PhoneTextfield)
-        
-    }
-    
-    func styleTextField(_ textField: UITextField) {
-        textField.layer.cornerRadius = 12
-        textField.layer.masksToBounds = true
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = UIColor.lightGray.cgColor
-        textField.backgroundColor = .white
-    }
-    func setupTextFields() {
-        FirstNameTextfield.delegate = self
-        LastNameTextfield.delegate = self
-        UserNameTextfield.delegate = self
-        EmailTextfield.delegate = self
-        PhoneTextfield.delegate = self
-
-        FirstNameTextfield.returnKeyType = .next
-        LastNameTextfield.returnKeyType = .next
-        UserNameTextfield.returnKeyType = .next
-        EmailTextfield.returnKeyType = .next
-        PhoneTextfield.returnKeyType = .done
-        
-        FirstNameTextfield.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        LastNameTextfield.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        UserNameTextfield.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        EmailTextfield.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        PhoneTextfield.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-
-        switch textField {
-        case FirstNameTextfield:
-            LastNameTextfield.becomeFirstResponder()
-
-        case LastNameTextfield:
-            UserNameTextfield.becomeFirstResponder()
-
-        case UserNameTextfield:
-            EmailTextfield.becomeFirstResponder()
-
-        case EmailTextfield:
-            PhoneTextfield.becomeFirstResponder()
-
-        case PhoneTextfield:
-            textField.resignFirstResponder()
-
-        default:
-            textField.resignFirstResponder()
-        }
-
-        return true
-    }
-    
-    func setupTapGesture() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tap)
-    }
-    
-    @objc func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-    func registerForKeyboardNotifications() {
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillShow),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil)
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil)
+        updateSaveButton()
+        addDoneButtonOnKeyboard()
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-
+        
         let rect = textField.convert(textField.bounds, to: ProfileScrollView)
         ProfileScrollView.scrollRectToVisible(rect, animated: true)
+        print("textfield tapped at", Date())
     }
     
-    func validateFields() {
+    private func configureTextFields() {
 
-        let isFormValid =
-            !(FirstNameTextfield.text?.isEmpty ?? true) &&
-            !(LastNameTextfield.text?.isEmpty ?? true) &&
-            !(UserNameTextfield.text?.isEmpty ?? true) &&
-            !(EmailTextfield.text?.isEmpty ?? true) &&
-            !(PhoneTextfield.text?.isEmpty ?? true)
+           let fields = [
+               FirstNameTextfield,
+               LastNameTextfield,
+               UserNameTextfield,
+               EmailTextfield,
+               PhoneTextfield
+           ]
 
-        ProfileSaveButton.isEnabled = isFormValid
-        updateSaveButtonUI()
+           fields.enumerated().forEach { index, field in
+//               field?.delegate = self
+               field?.returnKeyType = index == fields.count - 1 ? .done : .next
+               field?.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+           }
+       }
+
+       @objc private func textDidChange() {
+
+           viewModel.firstName = FirstNameTextfield.text ?? ""
+           viewModel.lastName = LastNameTextfield.text ?? ""
+           viewModel.userName = UserNameTextfield.text ?? ""
+           viewModel.email = EmailTextfield.text ?? ""
+           viewModel.phone = PhoneTextfield.text ?? ""
+
+           updateSaveButton()
+       }
+
+       private func updateSaveButton() {
+           let valid = viewModel.isFormValid
+           ProfileSaveButton.isEnabled = valid
+           ProfileSaveButton.updateAppearance(isEnabled: valid)
+       }
+
+       func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+
+           switch textField {
+           case FirstNameTextfield:
+               LastNameTextfield.becomeFirstResponder()
+           case LastNameTextfield:
+               UserNameTextfield.becomeFirstResponder()
+           case UserNameTextfield:
+               EmailTextfield.becomeFirstResponder()
+           case EmailTextfield:
+               PhoneTextfield.becomeFirstResponder()
+           default:
+               textField.resignFirstResponder()
+           }
+
+           return true
+       }
+    
+    private func setupDismissKeyboardGesture() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
-    func updateSaveButtonUI() {
-        if ProfileSaveButton.isEnabled {
-            ProfileSaveButton.backgroundColor = .systemBlue
-            ProfileSaveButton.layer.cornerRadius = 12
-            ProfileSaveButton.layer.masksToBounds = true
-        } else {
-            ProfileSaveButton.backgroundColor = .systemGray
-            ProfileSaveButton.layer.cornerRadius = 12
-            ProfileSaveButton.layer.masksToBounds = true
+    
+    
+    private func addDoneButtonOnKeyboard() {
+
+        let toolbar = UIToolbar()
+        toolbar.translatesAutoresizingMaskIntoConstraints = false
+        toolbar.sizeToFit()
+
+        let flexSpace = UIBarButtonItem(systemItem: .flexibleSpace)
+        let doneButton = UIBarButtonItem(
+            title: "Done",
+            style: .done,
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+
+        toolbar.items = [flexSpace, doneButton]
+
+        let fields = [
+            FirstNameTextfield,
+            LastNameTextfield,
+            UserNameTextfield,
+            EmailTextfield,
+            PhoneTextfield
+        ]
+
+        fields.forEach {
+            $0?.inputAccessoryView = toolbar
         }
     }
     
-    @objc func keyboardWillShow(notification: NSNotification) {
-
-        guard let userInfo = notification.userInfo,
-              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-
-        let keyboardHeight = keyboardFrame.height
-
-        ProfileScrollView.contentInset.bottom = keyboardHeight
-        ProfileScrollView.verticalScrollIndicatorInsets.bottom = keyboardHeight
-    }
-    
-    @objc func keyboardWillHide(notification: NSNotification) {
-
-        ProfileScrollView.contentInset.bottom = 0
-        ProfileScrollView.verticalScrollIndicatorInsets.bottom = 0
-    }
-    
-    @objc func textFieldDidChange() {
-        validateFields()
-    }
-    
     @IBAction func saveButtonTapped(_ sender: UIButton) {
-
-        let alert = UIAlertController(
-            title: "Success",
-            message: "Your profile has been saved.",
-            preferredStyle: .alert)
-
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-
-        present(alert, animated: true)
+        
+        let vc = storyboard?.instantiateViewController(withIdentifier: "RatingViewController") as? RatingViewController
+        navigationController?.pushViewController(vc!, animated: true)
+        
+    }
+    
+    
+    @objc private func keyboardDidShow(_ notification: Notification) {
+        print("Keyboard fully visible at", Date())
     }
     
 }
