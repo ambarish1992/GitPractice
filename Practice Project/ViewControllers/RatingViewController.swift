@@ -10,26 +10,18 @@ import UIKit
 class RatingViewController: UIViewController {
 
     @IBOutlet weak var star1Button: UIButton!
-    
     @IBOutlet weak var star2Button: UIButton!
-    
     @IBOutlet weak var star3Button: UIButton!
-    
     @IBOutlet weak var star4Button: UIButton!
-    
     @IBOutlet weak var star5Button: UIButton!
-    
     @IBOutlet weak var SubmitButton: UIButton!
     
     var currentRating = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
     }
     
-
     func updateRating(selectedRating: Int) {
         currentRating = selectedRating
         
@@ -71,7 +63,9 @@ class RatingViewController: UIViewController {
     }
     
     @IBAction func ratingTapped(_ sender: UIButton) {
-        print(sender.tag)
+        #if DEBUG
+        debugPrint(sender.tag)
+        #endif
         updateRating(selectedRating: sender.tag)
     }
 
@@ -87,6 +81,4 @@ class RatingViewController: UIViewController {
         present(alert, animated: true)
         
     }
-    
-    
 }

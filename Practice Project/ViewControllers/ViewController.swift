@@ -25,7 +25,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        print("viewDidLoad finished at", Date())
+        #if DEBUG
+        debugPrint("viewDidLoad finished at", Date())
+        #endif
         
         NotificationCenter.default.addObserver(
              self,
@@ -47,7 +49,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         let rect = textField.convert(textField.bounds, to: ProfileScrollView)
         ProfileScrollView.scrollRectToVisible(rect, animated: true)
-        print("textfield tapped at", Date())
+        #if DEBUG
+        debugPrint("textfield tapped at", Date())
+        #endif
     }
     
     private func configureTextFields() {
@@ -61,7 +65,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
            ]
 
            fields.enumerated().forEach { index, field in
-//               field?.delegate = self
                field?.returnKeyType = index == fields.count - 1 ? .done : .next
                field?.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
            }
@@ -112,8 +115,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    
-    
     private func addDoneButtonOnKeyboard() {
 
         let toolbar = UIToolbar()
@@ -150,9 +151,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    
     @objc private func keyboardDidShow(_ notification: Notification) {
-        print("Keyboard fully visible at", Date())
+        #if DEBUG
+        debugPrint("Keyboard fully visible at", Date())
+        #endif
     }
     
 }

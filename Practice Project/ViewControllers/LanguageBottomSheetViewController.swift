@@ -9,7 +9,6 @@ import UIKit
 
 class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate , UITableViewDataSource , UITextFieldDelegate{
     
-    
     @IBOutlet weak var SearchTextfield: UITextField!
     @IBOutlet weak var SearchBarView: UIView!
     @IBOutlet weak var LanguageTableView: UITableView!
@@ -17,20 +16,14 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
     
     private var searchBorder: GlassBorderLayer!
     private var tableBorder: GlassBorderLayer!
-    
-    var didSelectLanguage: ((Language) -> Void)?
-    
     private var filteredLanguages: [Language] = []
-    
     private var minHeight: CGFloat = 0
     private var maxHeight: CGFloat = 0
     private var panGesture: UIPanGestureRecognizer!
     private var initialY: CGFloat = 0
-    
-    var isOppositeUser = false
-    
     private var customKeyboard: CustomKeyboardView!
-    
+    var didSelectLanguage: ((Language) -> Void)?
+    var isOppositeUser = false
     var languages: [Language] = [
         Language(name: "English (US)", nativeName: "English", countryCode: "US"),
         Language(name: "English (UK)", nativeName: "English", countryCode: "GB"),
@@ -62,8 +55,7 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
             CACornerMask.layerMaxXMinYCorner
         ]
         dropDownView.clipsToBounds = true
-        
-        
+    
         LanguageTableView.layer.cornerRadius = 22
         LanguageTableView.clipsToBounds = true
         LanguageTableView.backgroundColor = .clear
@@ -73,8 +65,7 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
             blue: 88/255,
             alpha: 1.0
         )
-        
-        
+    
         if let placeholder = self.SearchTextfield.placeholder {
             self.SearchTextfield.attributedPlaceholder = NSAttributedString(
                 string: placeholder,
@@ -87,11 +78,8 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         if isOppositeUser {
             view.transform = CGAffineTransform(rotationAngle: .pi)
         }
-        
         panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         view.addGestureRecognizer(panGesture)
-
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -119,15 +107,13 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         if isOppositeUser {
             customKeyboard.transform = CGAffineTransform(rotationAngle: .pi)
         }
-        
         container.addSubview(customKeyboard)
     }
-    
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         addGradient()
-        GlassBorderLayer.apply(to: SearchBarView , cornerRadius: 22 , attachToSuperview: false)
+        GlassBorderLayer.apply(to: SearchBarView , cornerRadius: 22, attachToSuperview: false)
         GlassBorderLayer.apply(to: LanguageTableView, cornerRadius: 22, attachToSuperview: true)
         
         guard let container = view.superview else { return }
@@ -136,9 +122,6 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
             maxHeight = container.frame.height * 0.85
         
     }
-    
-    
- 
     
     private func addGradient() {
         
@@ -160,16 +143,11 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         dropDownView.layer.insertSublayer(gradient, at: 0)
     }
     
-    
-    
-    
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredLanguages.count
     }
     
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView,cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: "LanguageCell",
@@ -177,26 +155,18 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         ) as? LanguageCell else {
             return UITableViewCell()
         }
-        
         cell.selectionStyle = .none
         cell.configure(with: filteredLanguages[indexPath.row])
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         let selectedLanguage = filteredLanguages[indexPath.row]
-        
         didSelectLanguage?(selectedLanguage)
-        
         dismiss(animated: true)
-        
     }
     
-    
-    func tableView(_ tableView: UITableView,
-                   willDisplay cell: UITableViewCell,
-                   forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView,willDisplay cell: UITableViewCell,forRowAt indexPath: IndexPath) {
         
         guard let cell = cell as? LanguageCell else { return }
         
@@ -224,11 +194,9 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
     }
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        
         showKeyboard()
         extendSheetToMax()
-        
-        return false // prevent system keyboard
+        return false
     }
     
     private func showKeyboard() {
@@ -265,7 +233,6 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
             }
         }
     }
-    
     
     private func extendSheetToMax() {
         

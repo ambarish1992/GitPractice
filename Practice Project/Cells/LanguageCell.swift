@@ -10,9 +10,7 @@ import UIKit
 class LanguageCell: UITableViewCell {
 
     @IBOutlet weak var flagLabel: UILabel!
-    
     @IBOutlet weak var nameLabel: UILabel!
-    
     @IBOutlet weak var nativeLabel: UILabel!
     
     var isLastCell: Bool = false
@@ -44,14 +42,11 @@ class LanguageCell: UITableViewCell {
        private func generateFlag(from countryCode: String) -> String {
            var flag = ""
            let base: UInt32 = 127397
-
            for scalar in countryCode.uppercased().unicodeScalars {
                if let unicode = UnicodeScalar(base + scalar.value) {
                    flag.unicodeScalars.append(unicode)
                }
            }
-
            return flag
        }
-
 }

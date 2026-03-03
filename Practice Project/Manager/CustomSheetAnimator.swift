@@ -21,6 +21,7 @@ class CustomSheetAnimator: NSObject, UIViewControllerAnimatedTransitioning {
         let container = transitionContext.containerView
         
         if isPresenting {
+            
             guard let toView = transitionContext.view(forKey: .to) else { return }
             
             container.addSubview(toView)
@@ -35,8 +36,8 @@ class CustomSheetAnimator: NSObject, UIViewControllerAnimatedTransitioning {
             )
             
             let startFrame = fromTop
-                ? finalFrame.offsetBy(dx: 0, dy: -height)
-                : finalFrame.offsetBy(dx: 0, dy: height)
+            ? finalFrame.offsetBy(dx: 0, dy: -height)
+            : finalFrame.offsetBy(dx: 0, dy: height)
             
             toView.frame = startFrame
             
