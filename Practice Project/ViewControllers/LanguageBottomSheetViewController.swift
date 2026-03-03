@@ -22,6 +22,15 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
     
     private var filteredLanguages: [Language] = []
     
+    private var minHeight: CGFloat = 0
+    private var maxHeight: CGFloat = 0
+    private var panGesture: UIPanGestureRecognizer!
+    private var initialY: CGFloat = 0
+    
+    var isOppositeUser = false
+    
+    private var customKeyboard: CustomKeyboardView!
+    
     var languages: [Language] = [
         Language(name: "English (US)", nativeName: "English", countryCode: "US"),
         Language(name: "English (UK)", nativeName: "English", countryCode: "GB"),
@@ -75,14 +84,61 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         
         filteredLanguages = languages
         
+        if isOppositeUser {
+            view.transform = CGAffineTransform(rotationAngle: .pi)
+        }
+        
+        panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        view.addGestureRecognizer(panGesture)
+
+        
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        guard let container = view.superview else { return }
+        
+        let keyboardHeight: CGFloat = 280
+        
+        let initialY = isOppositeUser
+            ? -keyboardHeight
+            : container.frame.height
+        
+        customKeyboard = CustomKeyboardView(
+            frame: CGRect(
+                x: 0,
+                y: initialY,
+                width: container.frame.width,
+                height: keyboardHeight
+            )
+        )
+        
+        customKeyboard.textField = SearchTextfield
+        
+        if isOppositeUser {
+            customKeyboard.transform = CGAffineTransform(rotationAngle: .pi)
+        }
+        
+        container.addSubview(customKeyboard)
+    }
+    
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         addGradient()
         GlassBorderLayer.apply(to: SearchBarView , cornerRadius: 22 , attachToSuperview: false)
         GlassBorderLayer.apply(to: LanguageTableView, cornerRadius: 22, attachToSuperview: true)
+        
+        guard let container = view.superview else { return }
+            
+            minHeight = container.frame.height * 0.5
+            maxHeight = container.frame.height * 0.85
+        
     }
+    
+    
+ 
     
     private func addGradient() {
         
@@ -165,6 +221,146 @@ class LanguageBottomSheetViewController: UIViewController , UITableViewDelegate 
         }
         
         LanguageTableView.reloadData()
+    }
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        
+        showKeyboard()
+        extendSheetToMax()
+        
+        return false // prevent system keyboard
+    }
+    
+    private func showKeyboard() {
+        
+        guard let container = view.superview else { return }
+        
+        let keyboardHeight: CGFloat = 280
+        
+        UIView.animate(withDuration: 0.3) {
+            
+            if self.isOppositeUser {
+                // Animate from top downward
+                self.customKeyboard.frame.origin.y = 0
+            } else {
+                // Animate from bottom upward
+                self.customKeyboard.frame.origin.y =
+                    container.frame.height - keyboardHeight
+            }
+        }
+    }
+    
+    @objc private func dismissKeyboard() {
+        
+        guard let container = view.superview else { return }
+        
+        let keyboardHeight: CGFloat = 280
+        
+        UIView.animate(withDuration: 0.25) {
+            
+            if self.isOppositeUser {
+                self.customKeyboard.frame.origin.y = -keyboardHeight
+            } else {
+                self.customKeyboard.frame.origin.y = container.frame.height
+            }
+        }
+    }
+    
+    
+    private func extendSheetToMax() {
+        
+        guard let container = view.superview else { return }
+        
+        let finalY = isOppositeUser
+            ? 0
+            : container.frame.height - maxHeight
+        
+        UIView.animate(withDuration: 0.25) {
+            self.view.frame = CGRect(
+                x: 0,
+                y: finalY,
+                width: container.frame.width,
+                height: self.maxHeight
+            )
+        }
+    }
+    
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        
+        guard let container = view.superview else { return }
+        
+        let translation = gesture.translation(in: container)
+        let velocity = gesture.velocity(in: container).y
+        
+        switch gesture.state {
+            
+        case .changed:
+            
+            var newHeight: CGFloat
+            
+            if isOppositeUser {
+                // Top sheet logic
+                newHeight = view.frame.height + translation.y
+            } else {
+                // Bottom sheet logic
+                newHeight = view.frame.height - translation.y
+            }
+            
+            newHeight = max(minHeight, min(maxHeight, newHeight))
+            
+            let newY: CGFloat
+            
+            if isOppositeUser {
+                // Top anchored
+                newY = 0
+            } else {
+                // Bottom anchored
+                newY = container.frame.height - newHeight
+            }
+            
+            view.frame = CGRect(
+                x: 0,
+                y: newY,
+                width: container.frame.width,
+                height: newHeight
+            )
+            
+            gesture.setTranslation(.zero, in: container)
+            
+        case .ended:
+            
+            let midPoint = (minHeight + maxHeight) / 2
+            
+            if abs(velocity) > 900 {
+                dismiss(animated: true)
+                return
+            }
+            
+            if view.frame.height > midPoint {
+                snap(to: maxHeight)
+            } else {
+                snap(to: minHeight)
+            }
+            
+        default:
+            break
+        }
+    }
+    
+    private func snap(to height: CGFloat) {
+        
+        guard let container = view.superview else { return }
+        
+        let finalY = isOppositeUser ? 0 : container.frame.height - height
+        
+        UIView.animate(withDuration: 0.25) {
+            self.view.frame = CGRect(
+                x: 0,
+                y: finalY,
+                width: container.frame.width,
+                height: height
+            )
+        }
     }
     
 }
