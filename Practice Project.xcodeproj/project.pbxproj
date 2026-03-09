@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BD3C17892F5EE233008878BA /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = BD3C17882F5EE233008878BA /* Lottie */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		652A46662F5015D700550F1E /* Practice Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Practice Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD3C17892F5EE233008878BA /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = "Practice Project";
 			packageProductDependencies = (
+				BD3C17882F5EE233008878BA /* Lottie */,
 			);
 			productName = "Practice Project";
 			productReference = 652A46662F5015D700550F1E /* Practice Project.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = 652A465D2F5015D700550F1E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BD3C17872F5EE233008878BA /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 652A46672F5015D700550F1E /* Products */;
 			projectDirPath = "";
@@ -145,7 +154,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NRJD7YP7KR;
+				DEVELOPMENT_TEAM = ZUM2ZHKZ4Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Practice Project/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -177,7 +186,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NRJD7YP7KR;
+				DEVELOPMENT_TEAM = ZUM2ZHKZ4Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Practice Project/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -345,6 +354,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BD3C17872F5EE233008878BA /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BD3C17882F5EE233008878BA /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BD3C17872F5EE233008878BA /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 652A465E2F5015D700550F1E /* Project object */;
 }
